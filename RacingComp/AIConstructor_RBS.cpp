@@ -19,6 +19,7 @@ void AIConstructor_RBS::DefineActions()
 	auto avoidFunction = [](AIBrainBlackboardBase& bb) -> ActionStatus {
 		AIActor_Driver* actor = static_cast<AIActor_Driver*>(bb.GetActorContext());
 		float curXpos = bb.GetValue<float>("TrackXPos");
+		float turn = 0;
 
 		// always turn towards center
 		/*
@@ -39,8 +40,8 @@ void AIConstructor_RBS::DefineActions()
 			}
 		}
 		*/
-
-		float turn = -curXpos;
+		/*
+		turn = -curXpos;
 		if (std::abs(turn) < 0.4f)
 		{
 			turn *= 10;
@@ -54,12 +55,74 @@ void AIConstructor_RBS::DefineActions()
 			turn = 1;
 		}
 		actor->Turn(turn);
-
+		*/
 		//Pseudo for probably better
 		//get position of obstacle
 		//invert its position
 		//set to 1
 		//turn
+
+		// get all collision types from blackboard
+		std::vector< AIMath_Global::Vector2f > _oil = bb.GetValue<	std::vector< AIMath_Global::Vector2f > >("ObstacleOil");
+		std::vector< AIMath_Global::Vector2f > _bollard = bb.GetValue<	std::vector< AIMath_Global::Vector2f > >("ObstacleBollard");
+		std::vector< AIMath_Global::Vector2f > _trash = bb.GetValue<	std::vector< AIMath_Global::Vector2f > >("ObstacleTrash");
+
+		// check if in car's path
+		bool obstacleInPath = false;
+		float _collideDist = 0.25f;
+		int reactDistance = 7;
+
+		for (auto c : _oil)
+		{
+			if (std::abs(c.x - curXpos) < _collideDist && c.y <= reactDistance)
+			{
+				turn = -c.x * 100;
+				if (turn < -1)
+				{
+					turn = -1;
+				}
+				if (turn > 1)
+				{
+					turn = 1;
+				}
+			}
+		}
+
+		for (auto c : _bollard)
+		{
+			if (std::abs(c.x - curXpos) < _collideDist && c.y <= reactDistance)
+			{
+				turn = -c.x * 100;
+				if (turn < -1)
+				{
+					turn = -1;
+				}
+				if (turn > 1)
+				{
+					turn = 1;
+				}
+			}
+		}
+
+		for (auto c : _trash)
+		{
+			if (std::abs(c.x - curXpos) < _collideDist && c.y <= reactDistance)
+			{
+				turn = -c.x * 100;
+				if (turn < -1)
+				{
+					turn = -1;
+				}
+				if (turn > 1)
+				{
+					turn = 1;
+				}
+			}
+		}
+		actor->Turn(turn);
+		if (turn == 0) 
+			return ActionStatus::ACTION_SUCCESS;
+
 
 		// NOTE: If you are using an AI Method where actions continue beween updates (e.g. Behaviour Trees)
 		//   actions should return ACTION_RUNNING, ACTION_SUCCESS or ACTION_FAILURE as appropriate
@@ -83,7 +146,7 @@ void AIConstructor_RBS::DefineActions()
 
 		if (curXpos > 0)
 		{
-			actor->Turn(0.1f);
+			actor->Turn(-0.1f);
 			if (curXpos > 0.15)
 			{
 				actor->Turn(-0.15f);
@@ -104,7 +167,7 @@ void AIConstructor_RBS::DefineActions()
 		}
 		else if (curXpos < 0)
 		{
-			actor->Turn(-0.1f);
+			actor->Turn(0.1f);
 			if (curXpos < -0.15)
 			{
 				actor->Turn(0.15f);
@@ -159,7 +222,7 @@ void AIConstructor_RBS::DefineConsiderations()
 	// is there an obstacle of any type in reactDistance
 	auto cObstacle = [](AIBrainBlackboardBase& bb) -> bool {
 
-		int reactDistance = 10;
+		int reactDistance = 7;
 
 		// get all collision types from blackboard
 		std::vector< AIMath_Global::Vector2f > _oil = bb.GetValue<	std::vector< AIMath_Global::Vector2f > >("ObstacleOil");
@@ -169,7 +232,7 @@ void AIConstructor_RBS::DefineConsiderations()
 		// check if in car's path
 		bool obstacleInPath = false;
 		float curX = bb.GetValue<float>("TrackXPos");
-		float _collideDist = 0.2f;
+		float _collideDist = 0.25f;
 
 		for (auto c : _oil)
 		{
@@ -210,7 +273,7 @@ void AIConstructor_RBS::DefineConsiderations()
 
 	auto cNotObstacle = [](AIBrainBlackboardBase& bb) -> bool {
 
-		int reactDistance = 10;
+		int reactDistance = 7;
 
 		// get all collision types from blackboard
 		std::vector< AIMath_Global::Vector2f > _oil = bb.GetValue<	std::vector< AIMath_Global::Vector2f > >("ObstacleOil");
@@ -220,7 +283,7 @@ void AIConstructor_RBS::DefineConsiderations()
 		// check if in car's path
 		bool obstacleInPath = false;
 		float curX = bb.GetValue<float>("TrackXPos");
-		float _collideDist = 0.1f;
+		float _collideDist = 0.25f;
 		
 		for (auto c : _oil)
 		{

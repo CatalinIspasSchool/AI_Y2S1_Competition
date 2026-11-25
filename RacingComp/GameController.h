@@ -311,8 +311,8 @@ private:
 
 
 
-	// *** Set the track to be ued in the race ***
-	TrackData trackSelected = TrackData::Track1; // Track1, Track2, Track3
+	// *** Set the track to be used in the race ***
+	TrackData trackSelected = TrackData::Track2; // Track1, Track2, Track3
 
 
 
